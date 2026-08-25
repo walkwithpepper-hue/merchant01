@@ -51,15 +51,15 @@
                     <i data-lucide="chevron-down" id="chevron-0" class="text-gray-400 w-5 h-5 transition-transform"></i>
                 </button>
                 <div id="section-0" class="section-content p-5 bg-gray-50 active">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">사전 등록된 이메일 주소 입력</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">조사원 이메일 주소 입력</label>
                     <div class="flex gap-2">
                         <div class="relative flex-1">
                             <i data-lucide="lock" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4"></i>
-                            <input type="email" id="email-input" class="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="admin@example.com">
+                            <input type="email" id="email-input" class="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="agent@example.com">
                         </div>
                         <button id="verify-btn" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium whitespace-nowrap hover:bg-blue-700">인증</button>
                     </div>
-                    <p class="text-xs text-gray-500 mt-2">* 데모 접속: admin@example.com (관리자), agent1@example.com (요원)</p>
+                    <p class="text-xs text-gray-500 mt-2">* 데이터 구분을 위해 본인의 이메일을 입력해주세요.</p>
                     
                     <div id="admin-panel" class="hidden mt-4 p-4 bg-purple-50 rounded-xl border border-purple-100 flex items-center justify-between shadow-sm">
                         <div>
@@ -347,7 +347,6 @@
         }
 
         // --- Data Configurations ---
-        const AUTHORIZED_EMAILS = ["admin@example.com", "agent1@example.com", "agent2@example.com"];
         const ADMIN_EMAILS = ["admin@example.com"];
         
         const ACQUIRERS = ["Shinhan Card (신한카드)", "KB Kookmin Card (KB국민카드)", "Samsung Card (삼성카드)", "Hyundai Card (현대카드)", "Lotte Card (롯데카드)", "Woori Card (우리카드)", "Hana Card (하나카드)", "BC Card (BC카드)", "NH Nonghyup Card (NH농협카드)", "Others (기타)"];
@@ -407,22 +406,24 @@
 
         document.getElementById('verify-btn').addEventListener('click', () => {
             const email = document.getElementById('email-input').value.trim().toLowerCase();
-            if (AUTHORIZED_EMAILS.includes(email)) {
-                isAuthorized = true;
-                currentUser = email;
-                document.getElementById('email-input').disabled = true;
-                document.getElementById('verify-btn').textContent = "인증됨";
-                document.getElementById('verify-btn').className = "px-4 py-2 bg-green-100 text-green-700 rounded-lg font-medium cursor-default whitespace-nowrap";
-                document.getElementById('icon-sec-0').innerHTML = '✓';
-                showToast('인증 성공!', 'bg-success');
-                
-                if (ADMIN_EMAILS.includes(email)) {
-                    document.getElementById('admin-panel').classList.remove('hidden');
-                }
-                setTimeout(() => openSection('section-1', 1), 500);
-            } else {
-                showToast('등록되지 않은 이메일입니다.', 'bg-error');
+            
+            if (!email.includes('@')) {
+                showToast('유효한 이메일 주소를 입력해주세요.', 'bg-error');
+                return;
             }
+
+            isAuthorized = true;
+            currentUser = email;
+            document.getElementById('email-input').disabled = true;
+            document.getElementById('verify-btn').textContent = "인증 완료";
+            document.getElementById('verify-btn').className = "px-4 py-2 bg-green-100 text-green-700 rounded-lg font-medium cursor-default whitespace-nowrap";
+            document.getElementById('icon-sec-0').innerHTML = '✓';
+            showToast('환영합니다!', 'bg-success');
+            
+            if (ADMIN_EMAILS.includes(email)) {
+                document.getElementById('admin-panel').classList.remove('hidden');
+            }
+            setTimeout(() => openSection('section-1', 1), 500);
         });
 
         document.getElementById('gps-btn').addEventListener('click', () => {
