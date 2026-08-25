@@ -249,7 +249,7 @@
                 </button>
                 <div id="section-4" class="section-content p-5 bg-gray-50 space-y-6">
                     <div class="bg-yellow-50 p-4 rounded-xl border border-yellow-100">
-                        <label class="block text-sm font-bold text-yellow-800 mb-1">Receipt Photo (영수증 사진) <span class="text-red-500">*필수</span></label>
+                        <label class="block text-sm font-bold text-yellow-800 mb-1">Receipt Photo (영수증 사진) (Optional)</label>
                         <p class="text-xs text-yellow-600 mb-2">거래 영수증 사진을 촬영해 주세요.</p>
                         <input type="file" id="receipt-photo" accept="image/*" class="text-sm w-full bg-white p-2 border rounded">
                     </div>
@@ -646,12 +646,10 @@
             if (!entranceSticker) return showToast('Section 3: Entrance Sticker Installed? 여부를 선택해주세요.', 'bg-error');
 
             // Section 4 Validation
-            const receiptFile = document.getElementById('receipt-photo').files[0];
             const storefrontFile = document.getElementById('storefront-photo').files[0];
             const posPhotoFile = document.getElementById('pos-sticker-photo').files[0];
             const entrancePhotoFile = document.getElementById('entrance-sticker-photo').files[0];
 
-            if (!receiptFile) return showToast('Section 4: Receipt Photo (영수증 사진) 첨부는 필수입니다.', 'bg-error');
             if (!storefrontFile) return showToast('Section 4: Storefront Photo (전면 사진) 첨부는 필수입니다.', 'bg-error');
             if ((posSticker === 'Already installed' || posSticker === 'Newly installed') && !posPhotoFile) {
                 return showToast('Section 4: POS 스티커가 설치되어 있어 POS 스티커 사진 첨부가 필수입니다.', 'bg-error');
