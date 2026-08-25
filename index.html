@@ -631,10 +631,36 @@
             }
         });
 
+        const emailInput = document.getElementById('email-input');
+        
+        // 이메일 입력창에서 Enter키 누르면 자동 인증
+        emailInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('verify-btn').click();
+            }
+        });
+
+        // 올바른 이메일(@ 포함) 입력 시 즉시 다음 버튼 활성화
+        emailInput.addEventListener('input', (e) => {
+            if (!isVerified && e.target.value.includes('@')) {
+                const nextBtn = document.getElementById('sec0-next-btn');
+                nextBtn.classList.remove('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
+                nextBtn.classList.add('bg-blue-600', 'text-white', 'hover:bg-blue-700');
+                nextBtn.removeAttribute('disabled');
+            }
+        });
+
+        // 다음 단계로 버튼 클릭 시 미인증 상태면 자동으로 인증 처리 진행
         document.getElementById('sec0-next-btn').addEventListener('click', () => {
             if (!isVerified) {
-                showToast('먼저 Identification 단계에서 이메일을 인증해주세요.', 'bg-error');
-                return;
+                const email = emailInput.value.trim().toLowerCase();
+                if (email.includes('@')) {
+                    document.getElementById('verify-btn').click();
+                } else {
+                    showToast('먼저 Identification 단계에서 이메일을 인증해주세요.', 'bg-error');
+                    return;
+                }
             }
             openSection('section-1', 1);
         });
