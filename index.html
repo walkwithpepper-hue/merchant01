@@ -54,7 +54,7 @@
                     <div class="flex gap-2">
                         <div class="relative flex-1">
                             <i data-lucide="lock" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4"></i>
-                            <input type="email" id="email-input" class="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="agent@example.com">
+                            <input type="email" id="email-input" class="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="이메일 주소 입력">
                         </div>
                         <button id="verify-btn" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium whitespace-nowrap hover:bg-blue-700">입장</button>
                     </div>
@@ -230,7 +230,7 @@
         </div>
     </div>
 
-    <div id="dashboard" class="hidden max-w-5xl mx-auto bg-white md:rounded-xl md:shadow-lg overflow-hidden md:mt-8">
+    <div id="dashboard" class="hidden max-w-[95%] mx-auto bg-white md:rounded-xl md:shadow-lg overflow-hidden md:mt-8">
         <header class="p-5 border-b bg-gray-50 flex justify-between items-center flex-wrap gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
@@ -260,11 +260,11 @@
                     <thead class="bg-gray-100 text-gray-700 border-b">
                         <tr>
                             <th class="px-4 py-3 whitespace-nowrap">Time (시간)</th>
-                            <th class="px-4 py-3 whitespace-nowrap">Agent (요원)</th>
+                            <th class="px-4 py-3 whitespace-nowrap">Agent Email (요원이메일)</th>
                             <th class="px-4 py-3 whitespace-nowrap">Merchant Name (가맹점명)</th>
                             <th class="px-4 py-3 whitespace-nowrap">Address (네이버링크)</th>
                             <th class="px-4 py-3 whitespace-nowrap">GPS (좌표)</th>
-                            <th class="px-4 py-3 whitespace-nowrap">Zone/Microzone</th>
+                            <th class="px-4 py-3 whitespace-nowrap">Zone/Microzone (구역)</th>
                             <th class="px-4 py-3 whitespace-nowrap">Visit Status (방문상태)</th>
                             <th class="px-4 py-3 whitespace-nowrap">Merchant ID (가맹점번호)</th>
                             <th class="px-4 py-3 whitespace-nowrap">Acquirer (매입사명)</th>
@@ -334,7 +334,7 @@
             const toast = document.getElementById('toast');
             toast.textContent = message;
             toast.className = `toast show ${type}`;
-            setTimeout(() => { toast.classList.remove('show'); }, 4000); // 4초로 시간 연장
+            setTimeout(() => { toast.classList.remove('show'); }, 4000);
         }
 
         function compressImage(file, maxWidth = 800, quality = 0.6) {
@@ -375,26 +375,26 @@
             try {
                 const response = await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    redirect: 'follow', // 리다이렉트 허용
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // CORS 회피용
                     body: JSON.stringify({ filename: filename, base64: base64Str })
                 });
                 
                 const result = await response.json();
                 
-                // 구글 스크립트에서 명시적으로 에러를 반환했을 경우 (권한문제, 폴더ID문제 등)
                 if (result.result === 'error') {
-                    console.error("구글 드라이브 업로드 실패:", result.error);
-                    showToast(`⚠️ 사진 저장 에러 (Google Script): ${result.error}`, 'bg-error');
-                    return null;
+                    console.warn("구글 스크립트 처리 에러 (Fallback 작동):", result.error);
+                    // 스크립트 내부 에러 시 Base64 원본 텍스트 반환하여 DB에 직접 저장!
+                    return base64Str;
                 }
                 
                 return result.url; // 성공 시 드라이브 링크 반환
                 
             } catch (error) {
-                // 네트워크 에러나 CORS 에러가 발생했을 경우
-                console.error("네트워크/CORS 업로드 에러:", error);
-                showToast(`⚠️ 업로드 실패 (네트워크/CORS): ${error.message}`, 'bg-error');
-                return null;
+                // 네트워크/CORS 에러 발생 시 앱이 멈추지 않도록 예외 처리
+                console.warn("네트워크/CORS 업로드 에러 (Fallback 작동):", error);
+                // 에러 발생 시 Base64 원본 텍스트를 반환하여 DB에 직접 저장!
+                return base64Str; 
             }
         }
 
@@ -427,7 +427,7 @@
             btn.addEventListener('click', () => openSection(btn.dataset.next, parseInt(btn.dataset.next.replace('section-', ''))));
         });
 
-        // 이메일 입장 버튼
+        // 이메일 입장 버튼 (자동 넘어가기 제거됨)
         document.getElementById('verify-btn').addEventListener('click', () => {
             const email = document.getElementById('email-input').value.trim().toLowerCase();
             if (!email.includes('@')) return showToast('유효한 이메일 주소를 입력해주세요.', 'bg-error');
@@ -437,12 +437,12 @@
             document.getElementById('verify-btn').textContent = "입장 완료";
             document.getElementById('verify-btn').className = "px-4 py-2 bg-green-100 text-green-700 rounded-lg font-medium cursor-default whitespace-nowrap";
             document.getElementById('icon-sec-0').innerHTML = '✓';
-            showToast('환영합니다!', 'bg-success');
+            showToast('환영합니다! 다음 섹션을 클릭하여 조사를 시작하세요.', 'bg-success');
             
             if (ADMIN_EMAILS.includes(email)) {
                 document.getElementById('admin-panel').classList.remove('hidden');
             }
-            setTimeout(() => openSection('section-1', 1), 500);
+            // 기존에 있던 setTimeout 자동 넘어가기 코드를 제거했습니다.
         });
 
         // GPS 버튼
@@ -482,16 +482,15 @@
             const selectedEducated = document.querySelector('input[name="educated"]:checked');
             const selectedDemo = document.querySelector('input[name="demo-completed"]:checked');
             
-            // 📸 1. 이미지 압축
+            // 1. 이미지 압축
             const storefrontBase64 = await compressImage(document.getElementById('storefront-photo')?.files[0]);
             const terminalBase64 = await compressImage(document.getElementById('terminal-photo')?.files[0]);
 
-            // ☁️ 2. 구글 드라이브 업로드 및 URL 받아오기
-            const timeStr = Date.now();
-            const storefrontUrl = await uploadToGoogleDrive(storefrontBase64, `storefront_${timeStr}.jpg`);
-            const terminalUrl = await uploadToGoogleDrive(terminalBase64, `terminal_${timeStr}.jpg`);
+            // 2. 구글 드라이브 업로드 시도 (실패시 자동으로 Base64가 리턴됨)
+            let storefrontUrl = await uploadToGoogleDrive(storefrontBase64, `storefront_${Date.now()}.jpg`);
+            let terminalUrl = await uploadToGoogleDrive(terminalBase64, `terminal_${Date.now()}.jpg`);
 
-            // 📝 3. Firebase 데이터 수집
+            // 3. Firebase 데이터 수집
             const payload = {
                 timestamp: Date.now(),
                 agentEmail: currentUser,
@@ -510,7 +509,7 @@
                 posSticker: document.getElementById('pos-sticker').value,
                 entranceSticker: document.getElementById('entrance-sticker').value,
                 
-                // 구글 드라이브 사진 링크
+                // 구글 드라이브 사진 링크 (또는 실패시 Base64 텍스트) 저장
                 storefrontPhotoUrl: storefrontUrl || '',
                 terminalPhotoUrl: terminalUrl || ''
             };
@@ -518,8 +517,15 @@
             try {
                 const docRef = await addDoc(collection(db, "surveys"), payload);
                 console.log("저장 완료 ID: ", docRef.id);
-                showToast('✅ 클라우드에 성공적으로 저장되었습니다!', 'bg-success');
-                setTimeout(() => window.location.reload(), 2000);
+                
+                // Fallback으로 저장되었을 경우 안내
+                if(storefrontUrl && storefrontUrl.startsWith('data:image')) {
+                    showToast('✅ 구글 드라이브 대신 데이터베이스에 사진과 함께 안전하게 저장되었습니다!', 'bg-success');
+                } else {
+                    showToast('✅ 클라우드에 성공적으로 저장되었습니다!', 'bg-success');
+                }
+                
+                setTimeout(() => window.location.reload(), 2500);
             } catch (error) {
                 console.error("Firestore 에러: ", error);
                 showToast('저장 실패 (권한 에러일 수 있습니다): ' + error.message, 'bg-error');
@@ -535,7 +541,6 @@
             document.getElementById('dashboard').classList.remove('hidden');
             
             try {
-                // 시간 역순으로 가져오기
                 const q = query(collection(db, "surveys"), orderBy("timestamp", "desc"));
                 const querySnapshot = await getDocs(q);
                 
@@ -547,7 +552,7 @@
                 renderDashboard();
             } catch (error) {
                 console.error("Dashboard 에러:", error);
-                document.getElementById('table-body').innerHTML = `<tr><td colspan="6" class="p-6 text-center text-red-500">데이터를 불러오는 중 에러가 발생했습니다.<br>${error.message}</td></tr>`;
+                document.getElementById('table-body').innerHTML = `<tr><td colspan="17" class="p-6 text-center text-red-500">데이터를 불러오는 중 에러가 발생했습니다.<br>${error.message}</td></tr>`;
             }
         });
 
@@ -575,18 +580,20 @@
                 return;
             }
 
+            // 사진 링크를 만드는 헬퍼 함수 (Base64 Fallback 처리 포함)
+            const createPhotoBtn = (urlData) => {
+                if (!urlData) return '<span class="text-xs text-gray-400">없음</span>';
+                // 드라이브 업로드 실패로 Base64가 그대로 저장된 경우
+                if (urlData.startsWith('data:image')) {
+                    // 새 탭을 열어서 이미지 데이터를 직접 렌더링하도록 인라인 스크립트 작성
+                    return `<button onclick="const w=window.open(''); w.document.write('<img src=\\'${urlData}\\' style=\\'max-width:100%;\\'/>');" class="px-3 py-1.5 bg-yellow-100 text-yellow-700 rounded-md text-xs font-bold hover:bg-yellow-200 inline-block shadow-sm whitespace-nowrap">DB 사진 보기</button>`;
+                }
+                // 정상적으로 구글 드라이브 링크가 저장된 경우
+                return `<a href="${urlData}" target="_blank" class="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-md text-xs font-bold hover:bg-blue-200 inline-block shadow-sm whitespace-nowrap">드라이브 열기</a>`;
+            };
+
             fetchedSurveys.forEach(s => {
                 const date = new Date(s.timestamp).toLocaleString('ko-KR', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
-                
-                // 구글 드라이브 사진 링크 띄우기
-                const photoLink = s.storefrontPhotoUrl 
-                    ? `<a href="${s.storefrontPhotoUrl}" target="_blank" class="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-md text-xs font-bold hover:bg-blue-200 inline-block shadow-sm whitespace-nowrap">사진 열기</a>` 
-                    : '<span class="text-xs text-gray-400">없음</span>';
-
-                const terminalPhotoLink = s.terminalPhotoUrl 
-                    ? `<a href="${s.terminalPhotoUrl}" target="_blank" class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md text-xs font-bold hover:bg-gray-200 inline-block shadow-sm whitespace-nowrap">사진 열기</a>` 
-                    : '<span class="text-xs text-gray-400">없음</span>';
-
                 const gpsText = s.gpsLat && s.gpsLng ? `${Number(s.gpsLat).toFixed(4)},<br>${Number(s.gpsLng).toFixed(4)}` : '-';
                 const naverLinkHtml = s.naverLink ? `<a href="${s.naverLink}" target="_blank" class="text-blue-600 underline truncate block max-w-[120px]" title="${s.naverLink}">링크 이동</a>` : '-';
 
@@ -599,7 +606,7 @@
                     <td class="px-4 py-3 text-xs">${naverLinkHtml}</td>
                     <td class="px-4 py-3 text-xs text-gray-500">${gpsText}</td>
                     <td class="px-4 py-3 text-xs whitespace-nowrap">${s.zone || '-'}</td>
-                    <td class="px-4 py-3 text-xs whitespace-normal min-w-[200px]">${s.visitStatus || '-'}</td>
+                    <td class="px-4 py-3 text-xs whitespace-nowrap">${s.visitStatus || '-'}</td>
                     <td class="px-4 py-3 text-xs font-mono whitespace-nowrap">${s.merchantId || '-'}</td>
                     <td class="px-4 py-3 text-xs text-gray-600 whitespace-nowrap">${s.acquirer || '-'}</td>
                     <td class="px-4 py-3 text-xs text-gray-600 whitespace-nowrap">${s.terminalMaker || '-'}</td>
@@ -608,25 +615,24 @@
                     <td class="px-4 py-3 text-xs text-center">${s.demoCompleted || '-'}</td>
                     <td class="px-4 py-3 text-xs whitespace-nowrap">${s.posSticker || '-'}</td>
                     <td class="px-4 py-3 text-xs whitespace-nowrap">${s.entranceSticker || '-'}</td>
-                    <td class="px-4 py-3 text-center">${photoLink}</td>
-                    <td class="px-4 py-3 text-center">${terminalPhotoLink}</td>
+                    <td class="px-4 py-3 text-center">${createPhotoBtn(s.storefrontPhotoUrl)}</td>
+                    <td class="px-4 py-3 text-center">${createPhotoBtn(s.terminalPhotoUrl)}</td>
                 `;
                 tbody.appendChild(row);
             });
         }
 
-        // CSV 다운로드
         document.getElementById('download-csv-btn').addEventListener('click', () => {
             if(!fetchedSurveys.length) return showToast('다운로드할 데이터가 없습니다.', 'bg-warning');
             
             const headers = [
-                "Time (제출일시)", "Agent Email (요원이메일)", "Merchant Name (가맹점명)", 
+                "Time (시간)", "Agent Email (요원이메일)", "Merchant Name (가맹점명)", 
                 "Address (네이버링크)", "GPS Lat (위도)", "GPS Lng (경도)", "Zone/Microzone (구역)", 
                 "Visit Status (방문상태)", "Merchant ID (가맹점번호)", "Acquirer (매입사명)", 
                 "Terminal Maker (단말기제조사)", "Terminal Model (단말기모델)", 
-                "Merchant Educated? (교육여부)", "Demo Completed? (데모완료)", 
-                "POS Sticker", "Entrance Sticker", 
-                "Storefront Photo URL (전면사진링크)", "Terminal Photo URL (단말기사진링크)"
+                "Educated? (교육)", "Demo? (데모)", 
+                "POS Sticker (POS)", "Entrance Sticker (입구)", 
+                "Storefront Photo URL (전면사진)", "Terminal Photo URL (단말기사진)"
             ];
             
             const rows = fetchedSurveys.map(s => [
@@ -646,8 +652,8 @@
                 s.demoCompleted, 
                 s.posSticker, 
                 s.entranceSticker, 
-                s.storefrontPhotoUrl || '없음', 
-                s.terminalPhotoUrl || '없음'
+                s.storefrontPhotoUrl && s.storefrontPhotoUrl.startsWith('data:image') ? 'Base64_DB저장됨' : (s.storefrontPhotoUrl || '없음'), 
+                s.terminalPhotoUrl && s.terminalPhotoUrl.startsWith('data:image') ? 'Base64_DB저장됨' : (s.terminalPhotoUrl || '없음')
             ]);
             
             const csvContent = "\uFEFF" + [headers.join(","), ...rows.map(r => r.map(cell => `"${(cell || '').toString().replace(/"/g, '""')}"`).join(","))].join("\n");
