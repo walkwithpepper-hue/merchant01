@@ -84,6 +84,22 @@
                     <i data-lucide="chevron-down" id="chevron-1" class="text-gray-400 w-5 h-5 transition-transform"></i>
                 </button>
                 <div id="section-1" class="section-content p-5 bg-gray-50 space-y-4">
+                    <div class="p-4 bg-indigo-50 border border-indigo-100 rounded-xl mb-4 shadow-sm">
+                        <div class="flex items-start gap-3">
+                            <div class="bg-indigo-600 p-2 rounded-lg text-white">
+                                <i data-lucide="receipt" class="w-5 h-5"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-sm font-bold text-indigo-900">영수증 OCR 자동 입력</h3>
+                                <p class="text-xs text-indigo-700 mt-1 mb-3">영수증 사진을 업로드하면 가맹점 및 결제 정보가 폼에 자동으로 채워집니다.</p>
+                                <input type="file" id="ocr-input" accept="image/*" class="hidden">
+                                <button id="ocr-btn" class="w-full py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors shadow-sm">
+                                    영수증 사진 선택하기
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Merchant Name (가맹점명) <span class="text-red-500">*</span></label>
                         <input type="text" id="merchant-name" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
@@ -461,6 +477,170 @@
             }
         }
 
+        async function fetchWithRetry(url, options, maxRetries = 3) {
+            let delay = 1000;
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.status === 429) throw new Error("Rate limited");
+                    return response;
+                } catch (err) {
+                    if (i === maxRetries - 1) throw err;
+                    await new Promise(res => setTimeout(res, delay));
+                    delay *= 2;
+                }
+            }
+        }
+
+        async function processReceiptOcr(file) {
+            if (!file) return;
+            showToast('영수증을 분석 중입니다. 약 5~10초 정도 소요될 수 있습니다...', 'bg-info');
+            
+            const ocrBtn = document.getElementById('ocr-btn');
+            if(ocrBtn) {
+                ocrBtn.innerHTML = '<div class="spinner border-white inline-block align-middle mr-2 !w-4 !h-4 !border-[2px]"></div> 분석 중...';
+                ocrBtn.disabled = true;
+            }
+
+            try {
+                const base64Data = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = error => reject(error);
+                });
+                const base64String = base64Data.split(',')[1];
+
+                const apiKey = ""; // Runtime auto-injected by Canvas
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+                const prompt = `
+                Analyze the provided Korean receipt image and extract the following information.
+                Return ONLY a valid JSON object with the exact keys provided below. Do not include markdown code blocks like \`\`\`json.
+                If a field is not found or unreadable, leave the value as an empty string "".
+
+                Keys to extract:
+                - "merchantName": 가맹점명 (Merchant Name)
+                - "bizRegNo": 사업자등록번호 (Format: 000-00-00000)
+                - "repName": 대표자명 (Representative Name)
+                - "address": 주소 (Address)
+                - "phone": 전화번호 (Phone Number)
+                - "approvalTime": 승인일시 (Must be formatted exactly as YYYY-MM-DDTHH:mm, e.g., 2023-10-25T14:30. Extract year, month, day, hour, minute from the receipt)
+                - "cardNumber": 카드번호 (Card Number, keep maskings like ****)
+                - "merchantId": 가맹점번호 (Merchant ID, typically 8-9 digits)
+                - "approvalNumber": 승인번호 (Approval Number, typically 8 digits)
+                - "acquirer": 매입사명 or 발급사명 (e.g., 신한카드, KB국민카드, 삼성카드, 현대카드, 롯데카드, 우리카드, 하나카드, BC카드, NH농협카드)
+                - "cardType": 카드종류 (Must be strictly one of these English words based on context: "Credit", "Check", "Prepaid", or "Others")
+                `;
+
+                const payload = {
+                    contents: [{
+                        role: "user",
+                        parts: [
+                            { text: prompt },
+                            { inlineData: { mimeType: file.type || "image/jpeg", data: base64String } }
+                        ]
+                    }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                    }
+                };
+
+                const response = await fetchWithRetry(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error('API Request failed');
+
+                const result = await response.json();
+                const textResponse = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (!textResponse) throw new Error('No valid response from model');
+
+                let data;
+                try {
+                    const cleanedText = textResponse.replace(/^```json/m, '').replace(/```$/m, '').trim();
+                    data = JSON.parse(cleanedText);
+                } catch(e) {
+                    data = JSON.parse(textResponse);
+                }
+
+                // Temporary highlight class for user visibility
+                const hl = 'bg-blue-100';
+                const addHl = (el) => { if(el) el.classList.add(hl, 'transition-colors', 'duration-500'); };
+
+                // Populate Section 1
+                if(data.merchantName) { document.getElementById('merchant-name').value = data.merchantName; addHl(document.getElementById('merchant-name')); }
+                if(data.bizRegNo) { document.getElementById('biz-reg-no').value = data.bizRegNo; addHl(document.getElementById('biz-reg-no')); }
+                if(data.repName) { document.getElementById('rep-name').value = data.repName; addHl(document.getElementById('rep-name')); }
+                if(data.address) { document.getElementById('address-text').value = data.address; addHl(document.getElementById('address-text')); }
+                if(data.phone) { document.getElementById('phone-number').value = data.phone; addHl(document.getElementById('phone-number')); }
+
+                // Populate Section 2
+                if(data.approvalTime) {
+                    try {
+                        document.getElementById('approval-time').value = data.approvalTime;
+                        addHl(document.getElementById('approval-time'));
+                    } catch(e){}
+                }
+                if(data.cardNumber) { document.getElementById('card-number').value = data.cardNumber; addHl(document.getElementById('card-number')); }
+                if(data.merchantId) { document.getElementById('merchant-id').value = data.merchantId; addHl(document.getElementById('merchant-id')); }
+                if(data.approvalNumber) { document.getElementById('approval-number').value = data.approvalNumber; addHl(document.getElementById('approval-number')); }
+
+                if(data.acquirer) {
+                    const acqSelect = document.getElementById('acquirer-select');
+                    let found = false;
+                    for(let i=0; i<acqSelect.options.length; i++) {
+                        const optText = acqSelect.options[i].text.replace(/\s/g, '');
+                        const acqText = data.acquirer.replace(/\s/g, '');
+                        if(optText.includes(acqText) || acqText.includes(optText.split('(')[0])) {
+                            acqSelect.selectedIndex = i;
+                            found = true;
+                            document.getElementById('acquirer-other').style.display = 'none';
+                            break;
+                        }
+                    }
+                    if(!found) {
+                        acqSelect.value = "Others (기타)";
+                        document.getElementById('acquirer-other').style.display = 'block';
+                        document.getElementById('acquirer-other').value = data.acquirer;
+                    }
+                    addHl(acqSelect);
+                }
+
+                if(data.cardType) {
+                    const ctSelect = document.getElementById('card-type');
+                    for(let i=0; i<ctSelect.options.length; i++) {
+                        if(ctSelect.options[i].value.includes(data.cardType)) {
+                            ctSelect.selectedIndex = i;
+                            break;
+                        }
+                    }
+                    addHl(ctSelect);
+                }
+
+                showToast('OCR 완료: 영수증 정보가 폼에 자동 입력되었습니다.', 'bg-success');
+                
+                setTimeout(() => {
+                    document.querySelectorAll(`.${hl}`).forEach(el => {
+                        if(el.tagName === 'INPUT' || el.tagName === 'SELECT') {
+                            el.classList.remove(hl);
+                        }
+                    });
+                }, 3000);
+
+            } catch (error) {
+                console.error("OCR Error:", error);
+                showToast('영수증 분석 중 오류가 발생했습니다. 수동으로 입력해주세요.', 'bg-warning');
+            } finally {
+                if(ocrBtn) {
+                    ocrBtn.innerHTML = '영수증 사진 선택하기';
+                    ocrBtn.disabled = false;
+                }
+            }
+        }
+
         const acquirerSelect = document.getElementById('acquirer-select');
         const terminalSelect = document.getElementById('terminal-select');
         ACQUIRERS.forEach(opt => acquirerSelect.add(new Option(opt, opt)));
@@ -475,6 +655,35 @@
 
         const posStickerSelect = document.getElementById('pos-sticker');
         const entranceStickerSelect = document.getElementById('entrance-sticker');
+
+        const ocrInput = document.getElementById('ocr-input');
+        const ocrBtn = document.getElementById('ocr-btn');
+        const receiptPhotoInput = document.getElementById('receipt-photo');
+
+        if(ocrBtn && ocrInput) {
+            ocrBtn.addEventListener('click', () => ocrInput.click());
+            ocrInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if(!file) return;
+                
+                // Copy the file to Section 4's Receipt Photo input automatically!
+                if(receiptPhotoInput) {
+                    const dt = new DataTransfer();
+                    dt.items.add(file);
+                    receiptPhotoInput.files = dt.files;
+                }
+                await processReceiptOcr(file);
+            });
+        }
+
+        if(receiptPhotoInput) {
+            // Also trigger OCR if user directly uploads it in Section 4
+            receiptPhotoInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if(!file) return;
+                await processReceiptOcr(file);
+            });
+        }
 
         posStickerSelect.addEventListener('change', (e) => {
             const container = document.getElementById('pos-photo-container');
@@ -642,7 +851,8 @@
             if (!posSticker) return showToast('Section 3: POS Sticker Installed? 여부를 선택해주세요.', 'bg-error');
             if (!entranceSticker) return showToast('Section 3: Entrance Sticker Installed? 여부를 선택해주세요.', 'bg-error');
 
-            // Section 4 Validation
+            // Section 4 Validation (Fix added here)
+            const receiptFile = document.getElementById('receipt-photo').files[0]; 
             const storefrontFile = document.getElementById('storefront-photo').files[0];
             const posPhotoFile = document.getElementById('pos-sticker-photo').files[0];
             const entrancePhotoFile = document.getElementById('entrance-sticker-photo').files[0];
