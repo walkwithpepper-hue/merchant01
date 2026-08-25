@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>현장조사 앱 (Firebase Version)</title>
+    <title>현장조사 앱 (Firebase & Google Drive Version)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -51,7 +51,7 @@
                     <i data-lucide="chevron-down" id="chevron-0" class="text-gray-400 w-5 h-5 transition-transform"></i>
                 </button>
                 <div id="section-0" class="section-content p-5 bg-gray-50 active">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">조사원 이메일 주소 입력</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Agent Email (조사원 이메일 주소)</label>
                     <div class="flex gap-2 mb-4">
                         <div class="relative flex-1">
                             <i data-lucide="lock" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4"></i>
@@ -90,8 +90,21 @@
                         <input type="text" id="merchant-name" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Address (네이버 지도 링크) <span class="text-red-500">*</span></label>
-                        <input type="text" id="naver-link" placeholder="https://naver.me/..." class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Business Registration Number (사업자등록번호) <span class="text-red-500">*</span></label>
+                        <input type="text" id="biz-reg-no" placeholder="000-00-00000" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Representative Name (대표자명) <span class="text-red-500">*</span></label>
+                        <input type="text" id="rep-name" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Address (주소) <span class="text-red-500">*</span></label>
+                        <input type="text" id="address-text" placeholder="매장 상세 주소 입력" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none mb-2">
+                        <input type="text" id="naver-link" placeholder="네이버 지도 링크 (https://naver.me/...)" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number (전화번호) <span class="text-red-500">*</span></label>
+                        <input type="text" id="phone-number" placeholder="02-000-0000 또는 010-0000-0000" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">GPS (위치 등록) <span class="text-red-500">*</span></label>
@@ -101,10 +114,6 @@
                         <p id="gps-status" class="text-xs text-green-600 mt-2 font-medium hidden">✓ 위치 등록됨</p>
                         <input type="hidden" id="gps-lat">
                         <input type="hidden" id="gps-lng">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Zone / Microzone <span class="text-red-500">*</span></label>
-                        <input type="text" id="zone" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Visit Status (방문 상태) <span class="text-red-500">*</span></label>
@@ -128,30 +137,50 @@
                     </div>
                     <i data-lucide="chevron-down" id="chevron-2" class="text-gray-400 w-5 h-5 transition-transform"></i>
                 </button>
-                <div id="section-2" class="section-content p-5 bg-gray-50 space-y-6">
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Merchant ID (가맹점번호 수기입력) <span class="text-red-500">*</span></label>
-                            <input type="text" id="merchant-id" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Acquirer (매입사명) <span class="text-red-500">*</span></label>
-                            <select id="acquirer-select" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white mb-2">
-                                <option value="">매입사 선택</option>
-                            </select>
-                            <input type="text" id="acquirer-other" placeholder="매입사 직접 입력" class="hidden w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Terminal Maker (단말기 제조사명) <span class="text-red-500">*</span></label>
-                            <select id="terminal-select" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white mb-2">
-                                <option value="">제조사 선택</option>
-                            </select>
-                            <input type="text" id="terminal-other" placeholder="제조사 직접 입력" class="hidden w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Terminal Model (단말기 모델명) <span class="text-red-500">*</span></label>
-                            <input type="text" id="terminal-model" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                        </div>
+                <div id="section-2" class="section-content p-5 bg-gray-50 space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Approval Time (승인 일시) <span class="text-red-500">*</span></label>
+                        <input type="datetime-local" id="approval-time" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Card Number (카드 번호) <span class="text-red-500">*</span></label>
+                        <input type="text" id="card-number" placeholder="1234-56**-****-1234" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Merchant ID (가맹점번호) <span class="text-red-500">*</span></label>
+                        <input type="text" id="merchant-id" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Approval Number (승인번호) <span class="text-red-500">*</span></label>
+                        <input type="text" id="approval-number" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Acquirer (매입사명) <span class="text-red-500">*</span></label>
+                        <select id="acquirer-select" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white mb-2">
+                            <option value="">매입사 선택</option>
+                        </select>
+                        <input type="text" id="acquirer-other" placeholder="매입사 직접 입력" class="hidden w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Card Type (카드종류) <span class="text-red-500">*</span></label>
+                        <select id="card-type" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                            <option value="">선택하세요</option>
+                            <option value="Credit (신용카드)">Credit (신용카드)</option>
+                            <option value="Check (체크카드)">Check (체크카드)</option>
+                            <option value="Prepaid / Gift (선불/기프트카드)">Prepaid / Gift (선불/기프트카드)</option>
+                            <option value="Others (기타)">Others (기타)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Terminal Maker (단말기 제조사명) <span class="text-red-500">*</span></label>
+                        <select id="terminal-select" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white mb-2">
+                            <option value="">제조사 선택</option>
+                        </select>
+                        <input type="text" id="terminal-other" placeholder="제조사 직접 입력" class="hidden w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Terminal Model (단말기 모델명) <span class="text-red-500">*</span></label>
+                        <input type="text" id="terminal-model" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
                     <button class="next-btn w-full py-3 bg-blue-600 text-white rounded-lg font-medium mt-2" data-next="section-3">다음 단계로</button>
                 </div>
@@ -168,14 +197,14 @@
                 </button>
                 <div id="section-3" class="section-content p-5 bg-gray-50 space-y-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Merchant Educated? <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Merchant Educated? (교육 여부) <span class="text-red-500">*</span></label>
                         <div class="flex gap-4">
                             <label class="flex items-center gap-2 bg-white px-3 py-2 border rounded-lg cursor-pointer hover:bg-gray-50"><input type="radio" name="educated" value="Yes" class="w-4 h-4 text-blue-600"> <span>Yes</span></label>
                             <label class="flex items-center gap-2 bg-white px-3 py-2 border rounded-lg cursor-pointer hover:bg-gray-50"><input type="radio" name="educated" value="No" class="w-4 h-4 text-blue-600"> <span>No</span></label>
                         </div>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Demo Completed? <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Demo Completed? (데모 완료 여부) <span class="text-red-500">*</span></label>
                         <div class="flex gap-4">
                             <label class="flex items-center gap-2 bg-white px-3 py-2 border rounded-lg cursor-pointer hover:bg-gray-50"><input type="radio" name="demo-completed" value="Yes" class="w-4 h-4 text-blue-600"> <span>Yes</span></label>
                             <label class="flex items-center gap-2 bg-white px-3 py-2 border rounded-lg cursor-pointer hover:bg-gray-50"><input type="radio" name="demo-completed" value="No" class="w-4 h-4 text-blue-600"> <span>No</span></label>
@@ -185,7 +214,7 @@
                     <hr class="border-gray-200">
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">POS Sticker Installed? <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">POS Sticker Installed? (POS 스티커) <span class="text-red-500">*</span></label>
                         <select id="pos-sticker" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                             <option value="">선택</option>
                             <option value="No">No</option>
@@ -195,7 +224,7 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Entrance Sticker Installed? <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Entrance Sticker Installed? (입구 스티커) <span class="text-red-500">*</span></label>
                         <select id="entrance-sticker" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                             <option value="">선택</option>
                             <option value="No">No</option>
@@ -217,6 +246,12 @@
                     <i data-lucide="chevron-down" id="chevron-4" class="text-gray-400 w-5 h-5 transition-transform"></i>
                 </button>
                 <div id="section-4" class="section-content p-5 bg-gray-50 space-y-6">
+                    <div class="bg-yellow-50 p-4 rounded-xl border border-yellow-100">
+                        <label class="block text-sm font-bold text-yellow-800 mb-1">Receipt Photo (영수증 사진) <span class="text-red-500">*필수</span></label>
+                        <p class="text-xs text-yellow-600 mb-2">거래 영수증 사진을 촬영해 주세요.</p>
+                        <input type="file" id="receipt-photo" accept="image/*" class="text-sm w-full bg-white p-2 border rounded">
+                    </div>
+
                     <div class="bg-red-50 p-4 rounded-xl border border-red-100">
                         <label class="block text-sm font-bold text-red-800 mb-1">Storefront Photo (전면 사진) <span class="text-red-500">*필수</span></label>
                         <p class="text-xs text-red-600 mb-2">매장 전면이 잘 보이도록 촬영해 주세요.</p>
@@ -224,12 +259,12 @@
                     </div>
 
                     <div id="pos-photo-container" class="hidden bg-blue-50 p-4 rounded-xl border border-blue-100">
-                        <label class="block text-sm font-bold text-blue-800 mb-1">POS Sticker Photo (POS 스티커 사진) <span id="pos-photo-required" class="text-red-500">*필수</span></label>
+                        <label class="block text-sm font-bold text-blue-800 mb-1">POS Sticker Photo (POS 스티커 사진) <span id="pos-star" class="text-red-500 hidden">*필수</span></label>
                         <input type="file" id="pos-sticker-photo" accept="image/*" class="text-sm w-full bg-white p-2 border rounded">
                     </div>
 
                     <div id="entrance-photo-container" class="hidden bg-blue-50 p-4 rounded-xl border border-blue-100">
-                        <label class="block text-sm font-bold text-blue-800 mb-1">Entrance Sticker Photo (입구 스티커 사진) <span id="entrance-photo-required" class="text-red-500">*필수</span></label>
+                        <label class="block text-sm font-bold text-blue-800 mb-1">Entrance Sticker Photo (입구 스티커 사진) <span id="entrance-star" class="text-red-500 hidden">*필수</span></label>
                         <input type="file" id="entrance-sticker-photo" accept="image/*" class="text-sm w-full bg-white p-2 border rounded">
                     </div>
 
@@ -257,11 +292,26 @@
                 </h1>
                 <p class="text-sm text-gray-500 mt-1">Firebase DB에 실시간으로 저장된 데이터를 확인합니다.</p>
             </div>
-            <div class="flex gap-2 w-full md:w-auto">
-                <button id="download-csv-btn" class="flex-1 md:flex-none flex items-center justify-center gap-1 px-4 py-2 bg-green-600 text-white rounded-lg font-medium shadow-sm">
+            <div class="flex gap-2 w-full md:w-auto flex-wrap">
+                <button id="download-csv-btn" class="flex items-center justify-center gap-1 px-4 py-2 bg-green-600 text-white rounded-lg font-medium shadow-sm">
                     <i data-lucide="download" class="w-4 h-4"></i> CSV 다운로드
                 </button>
-                <button id="close-dashboard-btn" class="flex-1 md:flex-none px-4 py-2 bg-white border border-gray-300 rounded-lg font-medium text-gray-700 shadow-sm">
+                <button id="download-photos-receipt" class="flex items-center justify-center gap-1 px-4 py-2 bg-yellow-600 text-white rounded-lg font-medium shadow-sm">
+                    <i data-lucide="image" class="w-4 h-4"></i> 영수증 사진 다운로드
+                </button>
+                <button id="download-photos-storefront" class="flex items-center justify-center gap-1 px-4 py-2 bg-red-600 text-white rounded-lg font-medium shadow-sm">
+                    <i data-lucide="image" class="w-4 h-4"></i> 전면 사진 다운로드
+                </button>
+                <button id="download-photos-pos" class="flex items-center justify-center gap-1 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium shadow-sm">
+                    <i data-lucide="image" class="w-4 h-4"></i> POS 사진 다운로드
+                </button>
+                <button id="download-photos-entrance" class="flex items-center justify-center gap-1 px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium shadow-sm">
+                    <i data-lucide="image" class="w-4 h-4"></i> 입구 사진 다운로드
+                </button>
+                <button id="download-photos-terminal" class="flex items-center justify-center gap-1 px-4 py-2 bg-gray-600 text-white rounded-lg font-medium shadow-sm">
+                    <i data-lucide="image" class="w-4 h-4"></i> 단말기 사진 다운로드
+                </button>
+                <button id="close-dashboard-btn" class="px-4 py-2 bg-white border border-gray-300 rounded-lg font-medium text-gray-700 shadow-sm">
                     설문으로 돌아가기
                 </button>
             </div>
@@ -281,18 +331,26 @@
                             <th class="px-4 py-3 whitespace-nowrap">Time (시간)</th>
                             <th class="px-4 py-3 whitespace-nowrap">Agent Email (요원 이메일)</th>
                             <th class="px-4 py-3 whitespace-nowrap">Merchant Name (가맹점명)</th>
-                            <th class="px-4 py-3 whitespace-nowrap">Address (네이버 링크)</th>
+                            <th class="px-4 py-3 whitespace-nowrap">Business Registration Number (사업자등록번호)</th>
+                            <th class="px-4 py-3 whitespace-nowrap">Representative Name (대표자명)</th>
+                            <th class="px-4 py-3 whitespace-nowrap">Address (주소)</th>
+                            <th class="px-4 py-3 whitespace-nowrap">Address Link (네이버 지도 링크)</th>
+                            <th class="px-4 py-3 whitespace-nowrap">Phone Number (전화번호)</th>
                             <th class="px-4 py-3 whitespace-nowrap">GPS (좌표)</th>
-                            <th class="px-4 py-3 whitespace-nowrap">Zone / Microzone (구역)</th>
                             <th class="px-4 py-3 whitespace-nowrap">Visit Status (방문 상태)</th>
+                            <th class="px-4 py-3 whitespace-nowrap">Approval Time (승인 일시)</th>
+                            <th class="px-4 py-3 whitespace-nowrap">Card Number (카드 번호)</th>
                             <th class="px-4 py-3 whitespace-nowrap">Merchant ID (가맹점번호)</th>
+                            <th class="px-4 py-3 whitespace-nowrap">Approval Number (승인번호)</th>
                             <th class="px-4 py-3 whitespace-nowrap">Acquirer (매입사명)</th>
+                            <th class="px-4 py-3 whitespace-nowrap">Card Type (카드종류)</th>
                             <th class="px-4 py-3 whitespace-nowrap">Terminal Maker (단말기 제조사명)</th>
                             <th class="px-4 py-3 whitespace-nowrap">Terminal Model (단말기 모델명)</th>
                             <th class="px-4 py-3 whitespace-nowrap text-center">Merchant Educated? (교육 여부)</th>
                             <th class="px-4 py-3 whitespace-nowrap text-center">Demo Completed? (데모 완료 여부)</th>
                             <th class="px-4 py-3 whitespace-nowrap">POS Sticker Installed? (POS 스티커)</th>
                             <th class="px-4 py-3 whitespace-nowrap">Entrance Sticker Installed? (입구 스티커)</th>
+                            <th class="px-4 py-3 whitespace-nowrap text-center">Receipt Photo (영수증 사진)</th>
                             <th class="px-4 py-3 whitespace-nowrap text-center">Storefront Photo (전면 사진)</th>
                             <th class="px-4 py-3 whitespace-nowrap text-center">POS Sticker Photo (POS 스티커 사진)</th>
                             <th class="px-4 py-3 whitespace-nowrap text-center">Entrance Sticker Photo (입구 스티커 사진)</th>
@@ -300,7 +358,7 @@
                         </tr>
                     </thead>
                     <tbody id="table-body" class="divide-y divide-gray-100">
-                        <tr><td colspan="19" class="p-6 text-center text-gray-500">데이터를 불러오는 중입니다...</td></tr>
+                        <tr><td colspan="27" class="p-6 text-center text-gray-500">데이터를 불러오는 중입니다...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -415,26 +473,32 @@
             document.getElementById('terminal-other').style.display = e.target.value === 'Others (기타)' ? 'block' : 'none';
         });
 
-        // Toggle required photo containers based on Section 3 selection
+        // Toggle photo containers based on Section 3 selection
         const posStickerSelect = document.getElementById('pos-sticker');
         const entranceStickerSelect = document.getElementById('entrance-sticker');
 
         posStickerSelect.addEventListener('change', (e) => {
             const container = document.getElementById('pos-photo-container');
+            const star = document.getElementById('pos-star');
             if (e.target.value === 'Already installed' || e.target.value === 'Newly installed') {
                 container.classList.remove('hidden');
+                star.classList.remove('hidden');
             } else {
                 container.classList.add('hidden');
+                star.classList.add('hidden');
                 document.getElementById('pos-sticker-photo').value = '';
             }
         });
 
         entranceStickerSelect.addEventListener('change', (e) => {
             const container = document.getElementById('entrance-photo-container');
+            const star = document.getElementById('entrance-star');
             if (e.target.value === 'Already installed' || e.target.value === 'Newly installed') {
                 container.classList.remove('hidden');
+                star.classList.remove('hidden');
             } else {
                 container.classList.add('hidden');
+                star.classList.add('hidden');
                 document.getElementById('entrance-sticker-photo').value = '';
             }
         });
@@ -475,7 +539,7 @@
             document.getElementById('verify-btn').textContent = "인증완료";
             document.getElementById('verify-btn').className = "px-4 py-2 bg-green-100 text-green-700 rounded-lg font-medium cursor-default whitespace-nowrap";
             document.getElementById('icon-sec-0').innerHTML = '✓';
-            showToast('환영합니다! 다음 섹션을 클릭하거나 [다음 단계로]를 눌러 진행하세요.', 'bg-success');
+            showToast('환영합니다! 다음 단계를 진행하세요.', 'bg-success');
             
             if (ADMIN_EMAILS.includes(email)) {
                 document.getElementById('admin-panel').classList.remove('hidden');
@@ -510,30 +574,44 @@
 
             // Mandatory Field Validation (Section 1)
             const merchantName = document.getElementById('merchant-name').value.trim();
+            const bizRegNo = document.getElementById('biz-reg-no').value.trim();
+            const repName = document.getElementById('rep-name').value.trim();
+            const addressText = document.getElementById('address-text').value.trim();
             const naverLink = document.getElementById('naver-link').value.trim();
+            const phoneNumber = document.getElementById('phone-number').value.trim();
             const gpsLat = document.getElementById('gps-lat').value;
-            const zone = document.getElementById('zone').value.trim();
             const visitStatus = document.getElementById('visit-status').value;
 
             if (!merchantName) return showToast('Section 1: Merchant Name (가맹점명)을 입력해주세요.', 'bg-error');
-            if (!naverLink) return showToast('Section 1: Address (네이버 지도 링크)를 입력해주세요.', 'bg-error');
+            if (!bizRegNo) return showToast('Section 1: Business Registration Number (사업자등록번호)를 입력해주세요.', 'bg-error');
+            if (!repName) return showToast('Section 1: Representative Name (대표자명)을 입력해주세요.', 'bg-error');
+            if (!addressText) return showToast('Section 1: Address (주소)를 입력해주세요.', 'bg-error');
+            if (!naverLink) return showToast('Section 1: Address Link (네이버 지도 링크)를 입력해주세요.', 'bg-error');
+            if (!phoneNumber) return showToast('Section 1: Phone Number (전화번호)를 입력해주세요.', 'bg-error');
             if (!gpsLat) return showToast('Section 1: GPS 위치 등록을 완료해주세요.', 'bg-error');
-            if (!zone) return showToast('Section 1: Zone / Microzone을 입력해주세요.', 'bg-error');
             if (!visitStatus) return showToast('Section 1: Visit Status (방문 상태)를 선택해주세요.', 'bg-error');
 
             // Mandatory Field Validation (Section 2)
+            const approvalTime = document.getElementById('approval-time').value;
+            const cardNumber = document.getElementById('card-number').value.trim();
             const merchantId = document.getElementById('merchant-id').value.trim();
+            const approvalNumber = document.getElementById('approval-number').value.trim();
             const acquirerVal = document.getElementById('acquirer-select').value;
             const acquirerOtherVal = document.getElementById('acquirer-other').value.trim();
+            const cardType = document.getElementById('card-type').value;
             const terminalMakerVal = document.getElementById('terminal-select').value;
             const terminalOtherVal = document.getElementById('terminal-other').value.trim();
             const terminalModel = document.getElementById('terminal-model').value.trim();
 
+            if (!approvalTime) return showToast('Section 2: Approval Time (승인 일시)를 입력해주세요.', 'bg-error');
+            if (!cardNumber) return showToast('Section 2: Card Number (카드 번호)를 입력해주세요.', 'bg-error');
             if (!merchantId) return showToast('Section 2: Merchant ID (가맹점번호)를 입력해주세요.', 'bg-error');
+            if (!approvalNumber) return showToast('Section 2: Approval Number (승인번호)를 입력해주세요.', 'bg-error');
             if (!acquirerVal) return showToast('Section 2: Acquirer (매입사명)를 선택해주세요.', 'bg-error');
             if (acquirerVal === 'Others (기타)' && !acquirerOtherVal) {
                 return showToast('Section 2: 기타 매입사명을 입력해주세요.', 'bg-error');
             }
+            if (!cardType) return showToast('Section 2: Card Type (카드종류)를 선택해주세요.', 'bg-error');
             if (!terminalMakerVal) return showToast('Section 2: Terminal Maker (단말기 제조사명)를 선택해주세요.', 'bg-error');
             if (terminalMakerVal === 'Others (기타)' && !terminalOtherVal) {
                 return showToast('Section 2: 기타 단말기 제조사명을 입력해주세요.', 'bg-error');
@@ -552,10 +630,14 @@
             if (!entranceSticker) return showToast('Section 3: Entrance Sticker Installed? 여부를 선택해주세요.', 'bg-error');
 
             // Mandatory Field Validation (Section 4)
+            const receiptFile = document.getElementById('receipt-photo').files[0];
             const storefrontFile = document.getElementById('storefront-photo').files[0];
             const posPhotoFile = document.getElementById('pos-sticker-photo').files[0];
             const entrancePhotoFile = document.getElementById('entrance-sticker-photo').files[0];
 
+            if (!receiptFile) {
+                return showToast('Section 4: Receipt Photo (영수증 사진) 첨부는 필수입니다.', 'bg-error');
+            }
             if (!storefrontFile) {
                 return showToast('Section 4: Storefront Photo (전면 사진) 첨부는 필수입니다.', 'bg-error');
             }
@@ -571,12 +653,14 @@
             btn.innerHTML = '<div class="spinner border-white inline-block align-middle mr-2"></div> 클라우드 저장 중...';
 
             // Compress Images
+            const receiptBase64 = await compressImage(receiptFile);
             const storefrontBase64 = await compressImage(storefrontFile);
             const posPhotoBase64 = await compressImage(posPhotoFile);
             const entrancePhotoBase64 = await compressImage(entrancePhotoFile);
             const terminalBase64 = await compressImage(document.getElementById('terminal-photo')?.files[0]);
 
             // Upload or Fallback to Base64
+            let receiptUrl = await uploadToGoogleDrive(receiptBase64, `receipt_${Date.now()}.jpg`);
             let storefrontUrl = await uploadToGoogleDrive(storefrontBase64, `storefront_${Date.now()}.jpg`);
             let posPhotoUrl = await uploadToGoogleDrive(posPhotoBase64, `pos_${Date.now()}.jpg`);
             let entrancePhotoUrl = await uploadToGoogleDrive(entrancePhotoBase64, `entrance_${Date.now()}.jpg`);
@@ -586,19 +670,27 @@
                 timestamp: Date.now(),
                 agentEmail: currentUser,
                 merchantName: merchantName,
+                bizRegNo: bizRegNo,
+                repName: repName,
+                addressText: addressText,
                 naverLink: naverLink,
+                phoneNumber: phoneNumber,
                 gpsLat: gpsLat,
                 gpsLng: document.getElementById('gps-lng').value,
-                zone: zone,
                 visitStatus: visitStatus,
+                approvalTime: approvalTime,
+                cardNumber: cardNumber,
                 merchantId: merchantId,
+                approvalNumber: approvalNumber,
                 acquirer: acquirerVal === 'Others (기타)' ? acquirerOtherVal : acquirerVal,
+                cardType: cardType,
                 terminalMaker: terminalMakerVal === 'Others (기타)' ? terminalOtherVal : terminalMakerVal,
                 terminalModel: terminalModel,
                 educated: educatedEl.value,
                 demoCompleted: demoEl.value,
                 posSticker: posSticker,
                 entranceSticker: entranceSticker,
+                receiptPhotoUrl: receiptUrl || '',
                 storefrontPhotoUrl: storefrontUrl || '',
                 posPhotoUrl: posPhotoUrl || '',
                 entrancePhotoUrl: entrancePhotoUrl || '',
@@ -635,7 +727,7 @@
                 renderDashboard();
             } catch (error) {
                 console.error("Dashboard 에러:", error);
-                document.getElementById('table-body').innerHTML = `<tr><td colspan="19" class="p-6 text-center text-red-500">데이터를 불러오는 중 에러가 발생했습니다.<br>${error.message}</td></tr>`;
+                document.getElementById('table-body').innerHTML = `<tr><td colspan="27" class="p-6 text-center text-red-500">데이터를 불러오는 중 에러가 발생했습니다.<br>${error.message}</td></tr>`;
             }
         });
 
@@ -659,7 +751,7 @@
             lucide.createIcons();
 
             if(total === 0) {
-                tbody.innerHTML = '<tr><td colspan="19" class="p-6 text-center text-gray-500">저장된 데이터가 없습니다.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="27" class="p-6 text-center text-gray-500">저장된 데이터가 없습니다.</td></tr>';
                 return;
             }
 
@@ -682,18 +774,26 @@
                     <td class="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">${date}</td>
                     <td class="px-4 py-3 text-sm font-medium whitespace-nowrap">${(s.agentEmail||'').split('@')[0]}</td>
                     <td class="px-4 py-3 text-sm font-bold text-blue-800 whitespace-nowrap">${s.merchantName}</td>
+                    <td class="px-4 py-3 text-xs whitespace-nowrap">${s.bizRegNo || '-'}</td>
+                    <td class="px-4 py-3 text-xs whitespace-nowrap">${s.repName || '-'}</td>
+                    <td class="px-4 py-3 text-xs whitespace-nowrap">${s.addressText || '-'}</td>
                     <td class="px-4 py-3 text-xs">${naverLinkHtml}</td>
+                    <td class="px-4 py-3 text-xs whitespace-nowrap">${s.phoneNumber || '-'}</td>
                     <td class="px-4 py-3 text-xs text-gray-500">${gpsText}</td>
-                    <td class="px-4 py-3 text-xs whitespace-nowrap">${s.zone || '-'}</td>
                     <td class="px-4 py-3 text-xs whitespace-nowrap">${s.visitStatus || '-'}</td>
+                    <td class="px-4 py-3 text-xs whitespace-nowrap">${s.approvalTime || '-'}</td>
+                    <td class="px-4 py-3 text-xs whitespace-nowrap">${s.cardNumber || '-'}</td>
                     <td class="px-4 py-3 text-xs font-mono whitespace-nowrap">${s.merchantId || '-'}</td>
+                    <td class="px-4 py-3 text-xs whitespace-nowrap">${s.approvalNumber || '-'}</td>
                     <td class="px-4 py-3 text-xs text-gray-600 whitespace-nowrap">${s.acquirer || '-'}</td>
+                    <td class="px-4 py-3 text-xs text-gray-600 whitespace-nowrap">${s.cardType || '-'}</td>
                     <td class="px-4 py-3 text-xs text-gray-600 whitespace-nowrap">${s.terminalMaker || '-'}</td>
                     <td class="px-4 py-3 text-xs text-gray-600 whitespace-nowrap">${s.terminalModel || '-'}</td>
                     <td class="px-4 py-3 text-xs text-center">${s.educated || '-'}</td>
                     <td class="px-4 py-3 text-xs text-center">${s.demoCompleted || '-'}</td>
                     <td class="px-4 py-3 text-xs whitespace-nowrap">${s.posSticker || '-'}</td>
                     <td class="px-4 py-3 text-xs whitespace-nowrap">${s.entranceSticker || '-'}</td>
+                    <td class="px-4 py-3 text-center">${createPhotoBtn(s.receiptPhotoUrl)}</td>
                     <td class="px-4 py-3 text-center">${createPhotoBtn(s.storefrontPhotoUrl)}</td>
                     <td class="px-4 py-3 text-center">${createPhotoBtn(s.posPhotoUrl)}</td>
                     <td class="px-4 py-3 text-center">${createPhotoBtn(s.entrancePhotoUrl)}</td>
@@ -703,40 +803,72 @@
             });
         }
 
+        // Helper for categorized photo downloads
+        function downloadCategoryPhotos(photoKey, categoryName) {
+            const validSurveys = fetchedSurveys.filter(s => s[photoKey] && s[photoKey].length > 0 && !s[photoKey].startsWith('data:image'));
+            if(validSurveys.length === 0) {
+                return showToast(`다운로드할 ${categoryName} 사진(링크 형태)이 없습니다.`, 'warning');
+            }
+            let listText = validSurveys.map(s => `${s.merchantName || '가맹점'}: ${s[photoKey]}`).join('\n');
+            const blob = new Blob([listText], { type: 'text/plain;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url; link.download = `${categoryName}_Photo_Links_${Date.now()}.txt`;
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            showToast(`${categoryName} 사진 링크 목록 다운로드 완료!`, 'bg-success');
+        }
+
+        document.getElementById('download-photos-receipt').addEventListener('click', () => downloadCategoryPhotos('receiptPhotoUrl', 'Receipt'));
+        document.getElementById('download-photos-storefront').addEventListener('click', () => downloadCategoryPhotos('storefrontPhotoUrl', 'Storefront'));
+        document.getElementById('download-photos-pos').addEventListener('click', () => downloadCategoryPhotos('posPhotoUrl', 'POS_Sticker'));
+        document.getElementById('download-photos-entrance').addEventListener('click', () => downloadCategoryPhotos('entrancePhotoUrl', 'Entrance_Sticker'));
+        document.getElementById('download-photos-terminal').addEventListener('click', () => downloadCategoryPhotos('terminalPhotoUrl', 'Terminal'));
+
         document.getElementById('download-csv-btn').addEventListener('click', () => {
             if(!fetchedSurveys.length) return showToast('다운로드할 데이터가 없습니다.', 'bg-warning');
             
             const headers = [
                 "Time (시간)", "Agent Email (요원 이메일)", "Merchant Name (가맹점명)", 
-                "Address (네이버 링크)", "GPS Lat (위도)", "GPS Lng (경도)", "Zone / Microzone (구역)", 
-                "Visit Status (방문 상태)", "Merchant ID (가맹점번호)", "Acquirer (매입사명)", 
+                "Business Registration Number (사업자등록번호)", "Representative Name (대표자명)", 
+                "Address (주소)", "Address Link (네이버 링크)", "Phone Number (전화번호)", 
+                "GPS Lat (위도)", "GPS Lng (경도)", 
+                "Visit Status (방문 상태)", "Approval Time (승인 일시)", "Card Number (카드 번호)", 
+                "Merchant ID (가맹점번호)", "Approval Number (승인번호)", "Acquirer (매입사명)", "Card Type (카드종류)", 
                 "Terminal Maker (단말기 제조사명)", "Terminal Model (단말기 모델명)", 
                 "Merchant Educated? (교육 여부)", "Demo Completed? (데모 완료 여부)", 
                 "POS Sticker Installed? (POS 스티커)", "Entrance Sticker Installed? (입구 스티커)", 
-                "Storefront Photo URL (전면 사진)", "POS Photo URL (POS 사진)", "Entrance Photo URL (입구 사진)", "Terminal Photo URL (단말기 사진)"
+                "Receipt Photo (영수증 사진)", "Storefront Photo (전면 사진)", "POS Photo (POS 사진)", "Entrance Photo (입구 사진)", "Terminal Photo (단말기 사진)"
             ];
             
             const rows = fetchedSurveys.map(s => [
                 new Date(s.timestamp).toLocaleString('ko-KR'), 
                 s.agentEmail, 
                 s.merchantName, 
+                s.bizRegNo, 
+                s.repName, 
+                s.addressText, 
                 s.naverLink, 
+                s.phoneNumber, 
                 s.gpsLat, 
                 s.gpsLng, 
-                s.zone, 
                 s.visitStatus, 
+                s.approvalTime,
+                s.cardNumber,
                 s.merchantId, 
+                s.approvalNumber,
                 s.acquirer, 
+                s.cardType,
                 s.terminalMaker, 
                 s.terminalModel, 
                 s.educated, 
                 s.demoCompleted, 
                 s.posSticker, 
                 s.entranceSticker, 
-                s.storefrontPhotoUrl || '없음', 
-                s.posPhotoUrl || '없음',
-                s.entrancePhotoUrl || '없음',
-                s.terminalPhotoUrl || '없음'
+                s.receiptPhotoUrl ? "Yes" : "No",
+                s.storefrontPhotoUrl ? "Yes" : "No", 
+                s.posPhotoUrl ? "Yes" : "No",
+                s.entrancePhotoUrl ? "Yes" : "No",
+                s.terminalPhotoUrl ? "Yes" : "No"
             ]);
             
             const csvContent = "\uFEFF" + [headers.join(","), ...rows.map(r => r.map(cell => `"${(cell || '').toString().replace(/"/g, '""')}"`).join(","))].join("\n");
