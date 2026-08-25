@@ -741,9 +741,10 @@
             const email = document.getElementById('email-input').value.trim().toLowerCase();
             if (!email.includes('@')) return showToast('유효한 이메일 주소를 입력해주세요.', 'bg-error');
 
-            if (!AUTHORIZED_EMAILS.includes(email)) {
-                return showToast('등록되지 않은 이메일입니다. 관리자에게 문의하세요.', 'bg-error');
-            }
+            // 이메일 권한 제한 로직 제거 - 누구나 접속 가능
+            // if (!AUTHORIZED_EMAILS.includes(email)) {
+            //     return showToast('등록되지 않은 이메일입니다. 관리자에게 문의하세요.', 'bg-error');
+            // }
 
             currentUser = email;
             isVerified = true;
